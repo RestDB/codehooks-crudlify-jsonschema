@@ -1,0 +1,30 @@
+{
+  "name": "codehooks-crudlify-jsonschema",
+  "version": "0.0.1",
+  "description": "CRUD automation library for codehooks.io",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RestDB/codehooks-crudlify-jsonschema.git"
+  },
+  "keywords": [
+    "crud",
+    "rest",
+    "api",
+    "codehooks",
+    "serverless"
+  ],
+  "author": "codehooks-official",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RestDB/codehooks-crudlify-jsonschema/issues"
+  },
+  "homepage": "https://github.com/RestDB/codehooks-crudlify-jsonschema#readme",
+  "dependencies": {
+    "ajv": "^8.11.0",
+    "query-to-mongo": "^0.10.2"
+  }
+}
