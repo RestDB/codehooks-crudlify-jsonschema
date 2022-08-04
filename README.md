@@ -3,7 +3,8 @@ Create automatic CRUD API with [JSON schema](https://json-schema.org/learn/misce
 
 ## Install
 ```bash
-npm i codehooks-crudlify-jsonschema
+npm i codehooks-crudlify-jsonschema codehooks-js
+npm install
 ```
 
 ## Code example
