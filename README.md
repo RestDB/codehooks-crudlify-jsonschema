@@ -3,7 +3,7 @@ Create automatic CRUD API with JSON schema and persistence for a Codehooks.io ap
 
 ## Install
 ```bash
-npm i codehooks-crudlify-jsonschema ajv -s
+npm i codehooks-crudlify-jsonschema
 ```
 
 ## Code example
