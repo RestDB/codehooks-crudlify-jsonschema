@@ -38,7 +38,7 @@ const schema = {
     }
 }
 
-// Add CRUD routes with yup schema
+// Add CRUD routes with JSON schema
 crudlify(app, schema, {strict: true});
 
 // bind to serverless runtime
