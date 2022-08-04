@@ -14,7 +14,7 @@ npm i codehooks-crudlify-jsonschema ajv -s
 * Auto CRUD example using JSON schema
 */
 import { app } from 'codehooks-js'
-import crudlify from 'crudlify-json-schema';
+import crudlify from 'codehooks-crudlify-jsonschema';
 
 // json schema per collection
 const schema = {
