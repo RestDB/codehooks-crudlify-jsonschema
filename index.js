@@ -54,6 +54,7 @@ async function createFunc(req, res) {
 
 async function readManyFunc(req, res) {
     const {collection} = req.params;
+    const mongoQuery = q2m(req.query);
     if (_opt.strict && !_schema[collection]) {
         return res.status(404).send(`No collection ${collection}`)
     }
