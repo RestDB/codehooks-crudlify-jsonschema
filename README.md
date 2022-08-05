@@ -1,12 +1,17 @@
 # codehooks-crudlify-jsonschema
 Create automatic CRUD API with [JSON schema](https://json-schema.org/learn/miscellaneous-examples.html) and persistence for a [Codehooks.io](https://codehooks.io) application.
+The package [query-to-mongo](https://www.npmjs.com/package/query-to-mongo) are used to convert REST API query parameters to MongodBD queries agains the Codehooks.io datastore engine.
+
+**Example REST API with query:**
+
+`https://myproject-ff00.api.codehooks.io/devstore/customers?name=john&age>21`
 
 ## Install
 ```bash
 npm i codehooks-crudlify-jsonschema
 ```
 
-## Code example
+## Usage
 
 ```js
 
@@ -133,3 +138,5 @@ http://localhost:3000/dev/customer
 BODY
 {"name": "Dave", "status": "active", "purchase": 0}
 ```  
+
+> A similar package using Yup Schema exists [here](https://www.npmjs.com/package/codehooks-crudlify-yup)
