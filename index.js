@@ -14,48 +14,51 @@ let _opt = {};
  * @param {object} schema - JSON schema object
  * @param {object} opt - Options for strict
  */
-export default function crudlify(app, schema={}, opt={strict:true}) {
+export default function crudlify(app, schema={}, opt={strict:false}) {
     _schema = schema;
     _opt = opt;
     lodash.each(_schema, (val, key) => {
-        _schema[key] = {validate: ajv.compile(val)};
+        if (val !== null){
+            _schema[key] = {validate: ajv.compile(val)};
+        }
     })
     // Codehooks API routes
     app.post('/:collection', createFunc);
     app.get('/:collection', readManyFunc);
     app.get('/:collection/:ID', readOneFunc);   
     app.put('/:collection/:ID', updateFunc);
+    app.patch('/:collection/:ID', patchFunc);
     app.delete('/:collection/:ID', deleteFunc);
 }
 
 async function createFunc(req, res) {
     const {collection} = req.params;
     let document = req.body;
-    if (_schema[collection]) {
-        console.log("Has schema", collection)
-        const valid = _schema[collection].validate(document);
-        if (!valid) {
-            return res.status(400).json(_schema[collection].validate.errors);
+    const conn = await Datastore.open();
+    if (_schema[collection] !== undefined) {        
+        if (_schema[collection] !== null) {
+            const valid = _schema[collection].validate(document);
+            if (!valid) {
+                return res.status(400).json(_schema[collection].validate.errors);
+            } else {
+                const result = await conn.insertOne(collection, document);  
+                res.json(result);
+            }
         } else {
-            console.log("Valid", document)
+            // insert with no schema
+            const result = await conn.insertOne(collection, document);  
+            res.json(result);
         }
     } else {
-        if (_opt.strict) {
-            return res.status(400).json({"error": `Schema required for ${collection}`});
-        } else {
-            console.log("No schema for", collection)
-        }        
-    }
-    const conn = await Datastore.open();
-    const result = await conn.insertOne(collection, document);  
-    res.json(result);
+        return res.status(400).json({"error": `Collection not found ${collection}`});                
+    }    
 }
 
 
 async function readManyFunc(req, res) {
     const {collection} = req.params;
     const mongoQuery = q2m(req.query);
-    if (_opt.strict && !_schema[collection]) {
+    if (_schema[collection] === undefined) {
         return res.status(404).send(`No collection ${collection}`)
     }
     const conn = await Datastore.open();
@@ -78,8 +81,8 @@ async function readOneFunc(req, res) {
     const {collection, ID} = req.params;
     const conn = await Datastore.open();    
     try {
-        if (_opt.strict && !_schema[collection]) {
-            throw `No collection ${collection}`
+        if (_schema[collection] === undefined) {
+            return res.status(404).send(`No collection ${collection}`)
         }
         const result = await conn.getOne(collection, ID);
         res.json(result);
@@ -91,6 +94,20 @@ async function readOneFunc(req, res) {
 }
 
 async function updateFunc(req, res) {
+    const {collection, ID} = req.params;
+    try {
+        const document = req.body;
+        const conn = await Datastore.open();  
+        const result = await conn.replaceOne(collection, ID, document, {}); 
+        res.json(result);   
+    } catch (e) {
+        res
+        .status(404) // not found
+        .end(e);
+    }
+}
+
+async function patchFunc(req, res) {
     const {collection, ID} = req.params;
     try {
         const document = req.body;

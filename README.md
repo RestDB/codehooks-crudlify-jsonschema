@@ -8,14 +8,12 @@ The package [query-to-mongo](https://www.npmjs.com/package/query-to-mongo) are u
 
 ## Install
 ```bash
-npm i codehooks-crudlify-jsonschema codehooks-js
-npm install
+npm i codehooks-crudlify-jsonschema codehooks-js lodash
 ```
 
 ## Usage
 
 ```js
-
 /*
 * Auto CRUD example using JSON schema
 */
