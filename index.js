@@ -1,10 +1,13 @@
 // use npm package to convert URL query string to MongoDB query filter
-import {Datastore} from 'codehooks-js';
-const q2m = require('query-to-mongo');
-const Ajv = require("ajv")
-const ajv = new Ajv({useDefaults: true})
-const lodash = require('lodash')
+import q2m from 'query-to-mongo';
+import Ajv from 'ajv';
+const ajv = new Ajv({useDefaults: true});
+import lodash from 'lodash';
+import Debug from "debug";
+const debug = Debug("codehooks-crudlify");
 
+
+let Datastore = null;
 let _schema = {};
 let _opt = {};
 
@@ -17,6 +20,19 @@ let _opt = {};
 export default function crudlify(app, schema={}, opt={strict:false}) {
     _schema = schema;
     _opt = opt;
+    try {
+        Datastore = DB;
+    } catch (error) {
+        debug("Standalone mode:", error.message)
+    }
+    try {
+        app.addListener((updatedApp) => {
+            Datastore = updatedApp.getDatastore();
+            debug('Updated app', Datastore)
+        })
+    } catch (error) {
+        debug(error)
+    }
     lodash.each(_schema, (val, key) => {
         if (val !== null){
             _schema[key] = {validate: ajv.compile(val)};
@@ -25,9 +41,11 @@ export default function crudlify(app, schema={}, opt={strict:false}) {
     // Codehooks API routes
     app.post('/:collection', createFunc);
     app.get('/:collection', readManyFunc);
-    app.get('/:collection/:ID', readOneFunc);   
+    app.get('/:collection/:ID', readOneFunc);
     app.put('/:collection/:ID', updateFunc);
+    app.patch('/:collection/_byquery', patchManyFunc);
     app.patch('/:collection/:ID', patchFunc);
+    app.delete('/:collection/_byquery', deleteManyFunc);
     app.delete('/:collection/:ID', deleteFunc);
 }
 
@@ -64,7 +82,7 @@ async function createFunc(req, res) {
 async function readManyFunc(req, res) {
     const {collection} = req.params;
     const mongoQuery = q2m(req.query);
-    if ((Object.keys(_schema).length > 0 && _schema[collection] === undefined) {
+    if (Object.keys(_schema).length > 0 && _schema[collection] === undefined) {
         return res.status(404).send(`No collection ${collection}`)
     }
     const conn = await Datastore.open();
@@ -137,5 +155,39 @@ async function deleteFunc(req, res) {
         res
         .status(404) // not found
         .end(e);
+    }
+}
+async function patchManyFunc(req, res) {
+    const { collection } = req.params;
+    const mongoQuery = q2m(req.query);    
+    const options = {
+        filter: mongoQuery.criteria
+    }
+    try {
+        const document = req.body;
+        const conn = await Datastore.open();
+        const result = await conn.updateMany(collection, document, options);
+        res.json(result);
+    } catch (e) {
+        res
+            .status(404) // not found
+            .end(e);
+    }
+}
+
+async function deleteManyFunc(req, res) {
+    const { collection } = req.params;
+    const mongoQuery = q2m(req.query);    
+    const options = {
+        filter: mongoQuery.criteria
+    }
+    try {        
+        const conn = await Datastore.open();
+        const result = await conn.removeMany(collection, options);
+        res.json(result);
+    } catch (e) {
+        res
+            .status(404) // not found
+            .end(e);
     }
 }
